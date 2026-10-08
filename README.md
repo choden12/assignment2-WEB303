@@ -109,8 +109,7 @@ All Postman REST requests are sent through the API Gateway.
 - Postman for testing
 
 #### Step 1: Clone the repository
-git clone https://github.com/choden12/Assgnment_2_WEB303.git
-cd Assgnment_2_WEB303
+git clone: https://github.com/choden12/assignment2-WEB303.git
 
 #### Step 2: Start the application
 - Make sure Docker Desktop is running.
