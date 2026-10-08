@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package vehicle;
+
+option go_package = "vehicle-repair-microservices/proto/vehicle;vehiclepb";
+
+service VehicleService {
+  rpc CreateVehicle(CreateVehicleRequest) returns (VehicleResponse);
+  rpc GetVehicle(GetVehicleRequest) returns (VehicleResponse);
+  rpc UpdateVehicle(UpdateVehicleRequest) returns (VehicleResponse);
+  rpc DeleteVehicle(DeleteVehicleRequest) returns (DeleteVehicleResponse);
+  rpc ListVehicles(ListVehiclesRequest) returns (ListVehiclesResponse);
+}
+
+message Vehicle {
+  int32 id = 1;
+  string registration_number = 2;
+  string owner_name = 3;
+  string model = 4;
+  int32 year = 5;
+}
+
+message CreateVehicleRequest {
+  string registration_number = 1;
+  string owner_name = 2;
+  string model = 3;
+  int32 year = 4;
+}
+
+message GetVehicleRequest {
+  int32 id = 1;
+}
+
+message UpdateVehicleRequest {
+  int32 id = 1;
+  string registration_number = 2;
+  string owner_name = 3;
+  string model = 4;
+  int32 year = 5;
+}
+
+message DeleteVehicleRequest {
+  int32 id = 1;
+}
+
+message VehicleResponse {
+  Vehicle vehicle = 1;
+}
+
+message DeleteVehicleResponse {
+  string message = 1;
+}
+
+message ListVehiclesRequest {}
+
+message ListVehiclesResponse {
+  repeated Vehicle vehicles = 1;
+}
+

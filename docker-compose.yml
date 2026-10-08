@@ -1,0 +1,147 @@
+services:
+
+  # --------------------------------------------------
+  # Vehicle Database
+  # --------------------------------------------------
+  vehicle-db:
+    image: postgres:16
+    container_name: vehicle-db
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: vehicle_db
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - vehicle-db-data:/var/lib/postgresql/data
+      - ./vehicle-service/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vehicle_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+  # --------------------------------------------------
+  # Repair Database
+  # --------------------------------------------------
+  repair-db:
+    image: postgres:16
+    container_name: repair-db
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: repair_db
+
+    ports:
+      - "5434:5432"
+
+    volumes:
+      - repair-db-data:/var/lib/postgresql/data
+      - ./repair-service/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d repair_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+  # --------------------------------------------------
+  # Vehicle Service
+  # --------------------------------------------------
+  vehicle-service:
+    build:
+      context: .
+      dockerfile: vehicle-service/Dockerfile
+
+    container_name: vehicle-service
+
+    environment:
+      GRPC_PORT: "50051"
+
+      DB_HOST: vehicle-db
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: vehicle_db
+
+    ports:
+      - "50051:50051"
+
+    depends_on:
+      vehicle-db:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+
+  # --------------------------------------------------
+  # Repair Service
+  # --------------------------------------------------
+  repair-service:
+    build:
+      context: .
+      dockerfile: repair-service/Dockerfile
+
+    container_name: repair-service
+
+    environment:
+      GRPC_PORT: "50052"
+
+      DB_HOST: repair-db
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: repair_db
+
+      VEHICLE_SERVICE_ADDR: vehicle-service:50051
+
+    ports:
+      - "50052:50052"
+
+    depends_on:
+      repair-db:
+        condition: service_healthy
+      vehicle-service:
+        condition: service_started
+
+    restart: unless-stopped
+
+
+  # --------------------------------------------------
+  # API Gateway
+  # --------------------------------------------------
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+
+    container_name: api-gateway
+
+    environment:
+      HTTP_PORT: "18080"
+      VEHICLE_SERVICE_ADDR: vehicle-service:50051
+      REPAIR_SERVICE_ADDR: repair-service:50052
+
+    ports:
+      - "18080:18080"
+
+    depends_on:
+      - vehicle-service
+      - repair-service
+
+    restart: unless-stopped
+
+
+# ----------------------------------------------------
+# Persistent Database Volumes
+# ----------------------------------------------------
+volumes:
+  vehicle-db-data:
+  repair-db-data:

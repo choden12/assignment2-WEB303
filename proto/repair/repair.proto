@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package repair;
+
+option go_package = "vehicle-repair-microservices/proto/repair;repairpb";
+
+// RepairService manages repair jobs.
+service RepairService {
+
+  // Create a new repair job.
+  rpc CreateRepair(CreateRepairRequest) returns (RepairResponse);
+
+  // Retrieve a repair job by ID.
+  rpc GetRepair(GetRepairRequest) returns (RepairResponse);
+
+  // Update an existing repair job.
+  rpc UpdateRepair(UpdateRepairRequest) returns (RepairResponse);
+
+  // Delete a repair job.
+  rpc DeleteRepair(DeleteRepairRequest) returns (DeleteRepairResponse);
+
+  // Retrieve all repair jobs.
+  rpc ListRepairs(ListRepairsRequest) returns (ListRepairsResponse);
+}
+
+// RepairJob represents a repair job stored by Repair Service.
+message RepairJob {
+  int32 job_id = 1;
+  int32 vehicle_id = 2;
+  string problem_description = 3;
+  string repair_status = 4;
+  double cost = 5;
+  string created_at = 6;
+}
+
+// Request for creating a repair job.
+message CreateRepairRequest {
+  int32 vehicle_id = 1;
+  string problem_description = 2;
+  string repair_status = 3;
+  double cost = 4;
+}
+
+// Request for retrieving a repair job.
+message GetRepairRequest {
+  int32 job_id = 1;
+}
+
+// Request for updating a repair job.
+message UpdateRepairRequest {
+  int32 job_id = 1;
+  int32 vehicle_id = 2;
+  string problem_description = 3;
+  string repair_status = 4;
+  double cost = 5;
+}
+
+// Request for deleting a repair job.
+message DeleteRepairRequest {
+  int32 job_id = 1;
+}
+
+// Response containing one repair job.
+message RepairResponse {
+  RepairJob repair = 1;
+}
+
+// Response after deleting a repair job.
+message DeleteRepairResponse {
+  string message = 1;
+}
+
+// Request for listing repair jobs.
+message ListRepairsRequest {
+}
+
+// Response containing multiple repair jobs.
+message ListRepairsResponse {
+  repeated RepairJob repairs = 1;
+}
